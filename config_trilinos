@@ -1,0 +1,48 @@
+#!/bin/bash
+
+echo 'Hello World'
+
+TAG=trilinos-release-15-1-1
+BUILD_FOLDER=build_15.1.1
+SOURCE_FOLDER=TrilinosGit
+INSTALL_DIR="/home/$(whoami)/trilinos/15.1.1"
+BUILD_TYPE=Release
+
+rm -rf $SOURCE_FOLDER/$BUILD_FOLDER
+
+echo -B$SOURCE_FOLDER/$BUILD_FOLDER
+
+cmake -B$SOURCE_FOLDER/$BUILD_FOLDER \
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+        -GNinja \
+        -DCMAKE_CXX_COMPILER=mpic++ \
+        -DCMAKE_C_COMPILER=mpicc \
+        -DCMAKE_Fortran_COMPILER=gfortran \
+        -DTrilinos_USE_GNUINSTALLDIRS=TRUE \
+        -DTrilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON \
+        -DBUILD_SHARED_LIBS:BOOL=ON \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CXX_EXTENSIONS=OFF \
+        -DCMAKE_CXX_FLAGS_RELEASE_OVERRIDE="-std=c++17 -O3 -funroll-loops" \
+        -DCMAKE_C_FLAGS_RELEASE_OVERRIDE="-O3 -funroll-loops" \
+        -DCMAKE_Fortran_FLAGS_RELEASE_OVERRIDE="-O5 -funroll-all-loops -malign-double" \
+        -DTPL_ENABLE_MPI=ON \
+        -DTPL_ENABLE_gtest=ON \
+        -DTrilinos_ENABLE_OpenMP=ON \
+        -DTrilinos_ENABLE_Gtest=ON \
+        -DTrilinos_ENABLE_Tpetra=ON \
+        -DTrilinos_ENABLE_Xpetra=ON \
+        -DTrilinos_ENABLE_Amesos2=ON \
+        -DTrilinos_ENABLE_Belos=ON \
+        -DTrilinos_ENABLE_Kokkos=ON \
+        -DTrilinos_ENABLE_Ifpack2=ON \
+        -DTrilinos_ENABLE_Zoltan2=ON \
+        -DTrilinos_ENABLE_Teuchos=ON \
+        -DTrilinos_ENABLE_MueLu=ON \
+        -DTpetra_ASSUME_GPU_AWARE_MPI:BOOL=0 \
+        -DMueLu_ENABLE_Tutorial=OFF \
+        -DTrilinos_SHOW_DEPRECATED_WARNINGS=OFF \
+        -DTrilinos_HIDE_DEPRECATED_CODE=ON \
+        -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR $SOURCE_FOLDER
+
+ninja install -j $(nproc) -C $SOURCE_FOLDER/$BUILD_FOLDER
