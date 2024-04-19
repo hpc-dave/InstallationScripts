@@ -1,0 +1,17 @@
+#!/bin/bash
+
+git clone https://gitlab.kitware.com/vtk/vtk.git
+cd vtk
+git checkout v9.3.0
+rm -rf build
+mkdir build
+cd build
+cmake ..\
+     -GNinja \
+     -DCMAKE_BUILD_TYPE=Release\
+     -DVTK_USE_MPI=ON\
+     -DVTK_USE_CUDA=OFF\
+     -DVTK_SMP_IMPLEMENTATION_TYPE=OpenMP\
+     -DVTK_LEGACY_REMOVE=ON\
+     -DVTK_USE_FUTURE_CONST=ON\
+     -DVTK_USE_FUTURE_BOOL=ON
