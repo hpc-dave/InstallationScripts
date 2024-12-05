@@ -1,0 +1,32 @@
+# source: https://askubuntu.com/questions/46183/how-to-map-a-network-drive and https://askubuntu.com/questions/46183/how-to-map-a-network-drive
+
+sudo apt-get install -y samba smbclient cifs-utils
+
+# 1) back up fstab
+sudo cp /etc/fstab /etc/fstab_old
+# for recovery do: sudo mv /etc/fstab_old /etc/fstab
+
+# 2) generate credentials file for samba
+sudo nano /root/.smbcredentials
+# in this file add two lines with the login information:
+# username=<username>
+# password=<password>
+
+# 3) make the file only accessible as root
+sudo chmod 700 /root/.smbcredentials
+
+# 4) create the directory where the drive should be located
+sudo mkdir /mnt/<mydrive>
+
+# 5) edit fstab
+sudo nano /etc/fstab
+# at the end of the file, add following line
+# a) for read/write permission on a drive with password protection
+//<path.to.drive>/folder_with_data /mnt/<mydrive> cifs credentials=/root/.smbcredentials,iocharset=utf8,file_mode=0777,dir_mode=0777 0 0
+# b) for read/write permissions on a drive without protection (BOOOOOOOH)
+//<path.to.drive>/folder_with_data /mnt/<mydrive> cifs guest,iocharset=utf8,file_mode=0777,dir_mode=0777 0 0
+# c) for read only guest access
+//<path.to.drive>/folder_with_data /mnt/<mydrive> cifs guest,iocharset=utf8 0 0
+
+# 6) mount the drive
+sudo mount -a
