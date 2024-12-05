@@ -15,18 +15,18 @@ sudo nano /root/.smbcredentials
 # 3) make the file only accessible as root
 sudo chmod 700 /root/.smbcredentials
 
-# 4) create the directory where the drive should be located
-sudo mkdir /mnt/<mydrive>
+# 4) create the directory where the drive should be located (note that the ubuntu application 'Files' only checks the /media folder for network drives)
+sudo mkdir /media/<mydrive>
 
 # 5) edit fstab
 sudo nano /etc/fstab
 # at the end of the file, add following line
 # a) for read/write permission on a drive with password protection
-//<path.to.drive>/folder_with_data /mnt/<mydrive> cifs credentials=/root/.smbcredentials,iocharset=utf8,file_mode=0777,dir_mode=0777 0 0
+//<path.to.drive>/folder_with_data /media/<mydrive> cifs credentials=/root/.smbcredentials,iocharset=utf8,file_mode=0777,dir_mode=0777 0 0
 # b) for read/write permissions on a drive without protection (BOOOOOOOH)
-//<path.to.drive>/folder_with_data /mnt/<mydrive> cifs guest,iocharset=utf8,file_mode=0777,dir_mode=0777 0 0
+//<path.to.drive>/folder_with_data /media/<mydrive> cifs guest,iocharset=utf8,file_mode=0777,dir_mode=0777 0 0
 # c) for read only guest access
-//<path.to.drive>/folder_with_data /mnt/<mydrive> cifs guest,iocharset=utf8 0 0
+//<path.to.drive>/folder_with_data /media/<mydrive> cifs guest,iocharset=utf8 0 0
 
 # 6) mount the drive
 sudo mount -a
