@@ -1,0 +1,23 @@
+# the following has to be done when a new user is added
+
+# add a user with bash as login shell
+sudo useradd -m -s /bin/bash <user>
+
+# add the user to the appropriate groups
+sudo usermod -a -G ssh-auth <user>
+
+# change password and force expiry
+sudo passwd <user>
+sudo passwd --expire <user>
+
+# adding Xauthority file
+sudo touch /home/<user>/.Xauthority
+
+# generate ssh keys
+ssh-keygen -t rsa -b 2048
+
+# consider adding resource restrictions
+
+# consider adding pub ssh key to authorized keys
+
+# consider installing a virtual environment
