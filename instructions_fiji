@@ -4,6 +4,8 @@
 sudo apt-get update
 sudo apt-get upgrade
 
+sudo apt install libx11-dev
+
 # basic JDK for Fiji-latest from https://imagej.net/software/fiji/downloads#other-downloads
 wget https://downloads.micron.ox.ac.uk/fiji_update/mirrors/fiji-latest/fiji-latest-linux64-jdk.zip
 # unzip to destination
