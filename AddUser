@@ -1,23 +1,75 @@
-# the following has to be done when a new user is added
+#!/bin/bash
 
-# add a user with bash as login shell
-sudo useradd -m -s /bin/bash <user>
+set -euo pipefail
 
-# add the user to the appropriate groups
-sudo usermod -a -G ssh-auth <user>
+if [[ $EUID -ne 0 ]]; then
+    echo "Error: This script must be run as root."
+    exit 1
+fi
 
-# change password and force expiry
-sudo passwd <user>
-sudo passwd --expire <user>
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <username> [group1] [group2] ..."
+    exit 1
+fi
 
-# adding Xauthority file
-sudo touch /home/<user>/.Xauthority
+USERNAME="$1"
+shift
 
-# generate ssh keys
-ssh-keygen -t rsa -b 2048
+# Default group(s)
+GROUPS=("ssh-auth")
 
-# consider adding resource restrictions
+# Add any additional groups specified on the command line
+for grp in "$@"; do
+    GROUPS+=("$grp")
+done
 
-# consider adding pub ssh key to authorized keys
+# Check if user already exists
+if id "$USERNAME" &>/dev/null; then
+    echo "Error: User '$USERNAME' already exists."
+    exit 1
+fi
 
-# consider installing a virtual environment
+# Create groups if they do not exist
+for grp in "${GROUPS[@]}"; do
+    if ! getent group "$grp" >/dev/null; then
+        echo "$grp does not exist, cannot add user to this group"
+    fi
+done
+
+# Create user
+useradd -m -s /bin/bash "$USERNAME"
+
+# Add user to groups
+for grp in "${GROUPS[@]}"; do
+    usermod -aG "$grp" "$USERNAME"
+done
+
+USER_HOME=$(getent passwd "$USERNAME" | cut -d: -f6)
+
+# Create .Xauthority
+touch "$USER_HOME/.Xauthority"
+chown "$USERNAME:$USERNAME" "$USER_HOME/.Xauthority"
+chmod 600 "$USER_HOME/.Xauthority"
+
+# Create SSH directory
+install -d -m 700 -o "$USERNAME" -g "$USERNAME" "$USER_HOME/.ssh"
+
+# Generate SSH key pair
+runuser -u "$USERNAME" -- ssh-keygen \
+    -t rsa \
+    -b 2048 \
+    -f "$USER_HOME/.ssh/id_rsa" \
+    -N ""
+
+chmod 700 "$USER_HOME/.ssh"
+chmod 600 "$USER_HOME/.ssh/id_rsa"
+chmod 644 "$USER_HOME/.ssh/id_rsa.pub"
+chown -R "$USERNAME:$USERNAME" "$USER_HOME/.ssh"
+
+echo
+echo "User created successfully."
+echo "Username: $USERNAME"
+echo "Groups:   ${GROUPS[*]}"
+echo
+echo "Public SSH key:"
+cat "$USER_HOME/.ssh/id_rsa.pub"
